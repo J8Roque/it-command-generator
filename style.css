@@ -314,6 +314,23 @@ pre{
   border:1px solid rgba(0,0,0,.06);
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:13px;
+  pre{
+  line-height: 1.55;
+  font-size: 13px;
+}
+
+.cmd{
+  padding: 14px;
+}
+
+.cmd-top{
+  margin-bottom: 12px;
+}
+
+.copy-mini{
+  padding: 8px 12px;
+}
+
 }
 :root[data-theme="dark"] pre{
   background:rgba(255,255,255,.06);
