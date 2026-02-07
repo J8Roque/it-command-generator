@@ -1,10 +1,9 @@
-/* IT Command Generator
-   GitHub Pages friendly, no build tools needed
-*/
-
 const $ = (id) => document.getElementById(id);
+const STORAGE_KEY = "it_cmd_gen_v2";
 
-const STORAGE_KEY = "it_cmd_gen_v1";
+const CONFIG = {
+  github: "https://github.com/J8Roque"
+};
 
 const DATA = {
   windows: {
@@ -26,10 +25,7 @@ const DATA = {
               {
                 label: "Check IP and DNS",
                 admin: false,
-                cmd: {
-                  powershell: `Get-NetIPConfiguration | Format-List`,
-                  cmd: `ipconfig /all`
-                },
+                cmd: { powershell: `Get-NetIPConfiguration | Format-List`, cmd: `ipconfig /all` },
                 meaning: [
                   "Look for DNS Servers and Default Gateway.",
                   "If DNS Servers are blank or wrong, name lookups will fail."
@@ -38,10 +34,7 @@ const DATA = {
               {
                 label: "Test name resolution",
                 admin: false,
-                cmd: {
-                  powershell: `Resolve-DnsName google.com`,
-                  cmd: `nslookup google.com`
-                },
+                cmd: { powershell: `Resolve-DnsName google.com`, cmd: `nslookup google.com` },
                 meaning: [
                   "If this fails but pinging an IP works, it is usually DNS.",
                   "If it succeeds but browsing fails, it may be proxy, firewall, or TLS inspection."
@@ -50,19 +43,14 @@ const DATA = {
               {
                 label: "Flush DNS cache",
                 admin: true,
-                cmd: {
-                  powershell: `Clear-DnsClientCache`,
-                  cmd: `ipconfig /flushdns`
-                },
-                meaning: [
-                  "Useful after changing DNS settings or when cached bad entries exist."
-                ]
+                cmd: { powershell: `Clear-DnsClientCache`, cmd: `ipconfig /flushdns` },
+                meaning: ["Useful after changing DNS settings or when cached bad entries exist."]
               }
             ],
             resultMeaning: [
               "Resolution succeeds: DNS is working for that domain.",
               "Resolution times out: try different DNS server or check network path.",
-              "Wrong IP returned: could be DNS hijack, internal split DNS, or cached record."
+              "Wrong IP returned: could be internal split DNS or a cached record."
             ]
           },
           {
@@ -73,25 +61,14 @@ const DATA = {
               {
                 label: "Basic reachability",
                 admin: false,
-                cmd: {
-                  powershell: `ping -n 4 8.8.8.8`,
-                  cmd: `ping -n 4 8.8.8.8`
-                },
-                meaning: [
-                  "If ping fails to a public IP, it may be gateway, ISP, firewall rules, or no route."
-                ]
+                cmd: { powershell: `ping -n 4 8.8.8.8`, cmd: `ping -n 4 8.8.8.8` },
+                meaning: ["If ping fails to a public IP, it may be gateway, ISP, firewall rules, or no route."]
               },
               {
                 label: "Trace route",
                 admin: false,
-                cmd: {
-                  powershell: `tracert 8.8.8.8`,
-                  cmd: `tracert 8.8.8.8`
-                },
-                meaning: [
-                  "Find the hop where timeouts start.",
-                  "Some hops block ICMP and still forward traffic, so confirm with other tests."
-                ]
+                cmd: { powershell: `tracert 8.8.8.8`, cmd: `tracert 8.8.8.8` },
+                meaning: ["Find the hop where timeouts start.", "Some hops block ICMP and still forward traffic."]
               },
               {
                 label: "TCP test to a port",
@@ -100,51 +77,13 @@ const DATA = {
                   powershell: `Test-NetConnection google.com -Port 443`,
                   cmd: `powershell -Command "Test-NetConnection google.com -Port 443"`
                 },
-                meaning: [
-                  "If ICMP works but TCP 443 fails, it can be firewall or proxy issues."
-                ]
+                meaning: ["If ICMP works but TCP 443 fails, it can be firewall or proxy issues."]
               }
             ],
             resultMeaning: [
               "High latency early hops: local network or ISP congestion.",
               "Drop at first hop: default gateway or local firewall.",
               "Drop later: ISP routing, remote host issues, or filtered ICMP."
-            ]
-          },
-          {
-            id: "open_ports",
-            name: "Check listening ports and connections",
-            description: "See what ports are listening and which process owns them.",
-            steps: [
-              {
-                label: "List ports with process IDs",
-                admin: false,
-                cmd: {
-                  powershell: `netstat -ano | findstr LISTENING`,
-                  cmd: `netstat -ano | findstr LISTENING`
-                },
-                meaning: [
-                  "Use the PID to identify the process.",
-                  "If an unexpected port is open, verify the app and its source."
-                ]
-              },
-              {
-                label: "Map PID to process name",
-                admin: false,
-                cmd: {
-                  powershell: `Get-Process -Id <PID>`,
-                  cmd: `tasklist /FI "PID eq <PID>"`
-                },
-                meaning: [
-                  "Replace <PID> with the number from netstat.",
-                  "Confirm it matches the expected application."
-                ]
-              }
-            ],
-            resultMeaning: [
-              "Listening on 0.0.0.0 means it is bound to all interfaces.",
-              "Listening on 127.0.0.1 means local only.",
-              "Many connections in SYN_SENT can indicate connectivity issues."
             ]
           }
         ]
@@ -161,13 +100,8 @@ const DATA = {
               {
                 label: "Show free space",
                 admin: false,
-                cmd: {
-                  powershell: `Get-PSDrive -PSProvider FileSystem`,
-                  cmd: `wmic logicaldisk get caption,freespace,size`
-                },
-                meaning: [
-                  "Low free space can cause slow performance, failed updates, and app errors."
-                ]
+                cmd: { powershell: `Get-PSDrive -PSProvider FileSystem`, cmd: `wmic logicaldisk get caption,freespace,size` },
+                meaning: ["Low free space can cause slow performance, failed updates, and app errors."]
               },
               {
                 label: "Find large folders (quick)",
@@ -176,49 +110,12 @@ const DATA = {
                   powershell: `Get-ChildItem C:\\ -Directory -Force -ErrorAction SilentlyContinue | ForEach-Object { "{0}  {1:N2} GB" -f $_.FullName, ((Get-ChildItem $_.FullName -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1GB) }`,
                   cmd: `dir C:\\ /s`
                 },
-                meaning: [
-                  "PowerShell version gives per folder sizes but can take time.",
-                  "Stop if it is too slow on a large drive."
-                ]
+                meaning: ["PowerShell version gives per folder sizes but can take time."]
               }
             ],
             resultMeaning: [
               "Under 10 percent free space: expect performance and update problems.",
               "Under 5 GB free: prioritize cleanup before troubleshooting other issues."
-            ]
-          },
-          {
-            id: "check_disk",
-            name: "Disk health quick checks",
-            description: "Check file system issues and basic disk status.",
-            steps: [
-              {
-                label: "Check file system for issues (scan)",
-                admin: true,
-                cmd: {
-                  powershell: `chkdsk C: /scan`,
-                  cmd: `chkdsk C: /scan`
-                },
-                meaning: [
-                  "This scans online and reports issues.",
-                  "Some repairs require a reboot or offline repair."
-                ]
-              },
-              {
-                label: "Check SMART status (basic)",
-                admin: true,
-                cmd: {
-                  powershell: `wmic diskdrive get status,model`,
-                  cmd: `wmic diskdrive get status,model`
-                },
-                meaning: [
-                  "If status is not OK, plan a backup and drive replacement."
-                ]
-              }
-            ],
-            resultMeaning: [
-              "File system errors can cause crashes and missing files.",
-              "SMART issues often mean the disk is failing."
             ]
           }
         ]
@@ -235,26 +132,14 @@ const DATA = {
               {
                 label: "List service state",
                 admin: false,
-                cmd: {
-                  powershell: `Get-Service -Name "<ServiceName>"`,
-                  cmd: `sc query "<ServiceName>"`
-                },
-                meaning: [
-                  "Replace <ServiceName> with the actual service name.",
-                  "If it is stopped, check dependencies and event logs."
-                ]
+                cmd: { powershell: `Get-Service -Name "<ServiceName>"`, cmd: `sc query "<ServiceName>"` },
+                meaning: ["Replace <ServiceName> with the actual service name."]
               },
               {
                 label: "Restart service",
                 admin: true,
-                cmd: {
-                  powershell: `Restart-Service -Name "<ServiceName>" -Force`,
-                  cmd: `net stop "<ServiceName>" && net start "<ServiceName>"`
-                },
-                meaning: [
-                  "Use only if you understand the impact.",
-                  "Some services cannot be restarted during business hours."
-                ]
+                cmd: { powershell: `Restart-Service -Name "<ServiceName>" -Force`, cmd: `net stop "<ServiceName>" && net start "<ServiceName>"` },
+                meaning: ["Use only if you understand the impact."]
               }
             ],
             resultMeaning: [
@@ -282,117 +167,19 @@ const DATA = {
               {
                 label: "View DNS resolver settings",
                 admin: false,
-                cmd: {
-                  linux: `resolvectl status || cat /etc/resolv.conf`
-                },
-                meaning: [
-                  "Look for DNS Servers and current DNS domain search list.",
-                  "If resolvectl is missing, use /etc/resolv.conf."
-                ]
+                cmd: { linux: `resolvectl status || cat /etc/resolv.conf` },
+                meaning: ["Look for DNS Servers and search domains."]
               },
               {
                 label: "Test name resolution",
                 admin: false,
-                cmd: {
-                  linux: `dig +short google.com || nslookup google.com`
-                },
-                meaning: [
-                  "If dig is missing, nslookup is the fallback.",
-                  "If name lookup fails but pinging an IP works, it is likely DNS."
-                ]
-              },
-              {
-                label: "Test connectivity to DNS server",
-                admin: false,
-                cmd: {
-                  linux: `ping -c 3 8.8.8.8`
-                },
-                meaning: [
-                  "If ping fails, check default route, firewall, or interface status."
-                ]
+                cmd: { linux: `dig +short google.com || nslookup google.com` },
+                meaning: ["If name lookup fails but pinging an IP works, it is likely DNS."]
               }
             ],
             resultMeaning: [
               "No DNS servers: configure NetworkManager or systemd resolved.",
-              "Timeouts: try a different DNS server or check route and firewall.",
-              "Wrong IP: split DNS or cached record could be involved."
-            ]
-          },
-          {
-            id: "network_trace",
-            name: "Network trace to a host",
-            description: "Check routing hops and where packets drop.",
-            steps: [
-              {
-                label: "Basic reachability",
-                admin: false,
-                cmd: {
-                  linux: `ping -c 4 8.8.8.8`
-                },
-                meaning: [
-                  "If this fails, check default route and interface."
-                ]
-              },
-              {
-                label: "Trace route",
-                admin: false,
-                cmd: {
-                  linux: `traceroute 8.8.8.8 || tracepath 8.8.8.8`
-                },
-                meaning: [
-                  "Some systems do not have traceroute installed.",
-                  "tracepath is a common fallback."
-                ]
-              },
-              {
-                label: "Check routes and gateway",
-                admin: false,
-                cmd: {
-                  linux: `ip route`
-                },
-                meaning: [
-                  "Look for default via <gateway>.",
-                  "No default route means you cannot reach the internet."
-                ]
-              }
-            ],
-            resultMeaning: [
-              "Drop at first hop: gateway or local firewall.",
-              "Drop later: ISP or upstream routing.",
-              "ICMP blocked: confirm with TCP tests using curl."
-            ]
-          },
-          {
-            id: "open_ports",
-            name: "Check listening ports",
-            description: "See open listening ports and owning processes.",
-            steps: [
-              {
-                label: "List listening ports",
-                admin: false,
-                cmd: {
-                  linux: `ss -tulpen | head -n 40`
-                },
-                meaning: [
-                  "Look for LISTEN entries and the process name at the end.",
-                  "If ss is missing, install iproute2 or use netstat if available."
-                ]
-              },
-              {
-                label: "Test a local port",
-                admin: false,
-                cmd: {
-                  linux: `curl -I http://127.0.0.1:80 2>/dev/null | head -n 5`
-                },
-                meaning: [
-                  "Useful to confirm a web service is responding locally."
-                ]
-              }
-            ],
-            resultMeaning: [
-              "0.0.0.0 means all interfaces.",
-              "127.0.0.1 means local only.",
-              "If a service is exposed externally, check firewall rules."
+              "Timeouts: try a different DNS server or check route and firewall."
             ]
           }
         ]
@@ -406,36 +193,9 @@ const DATA = {
             name: "Disk space check",
             description: "Check free space and find large directories.",
             steps: [
-              {
-                label: "Show free space",
-                admin: false,
-                cmd: {
-                  linux: `df -h`
-                },
-                meaning: [
-                  "Look for filesystems near 100 percent use."
-                ]
-              },
-              {
-                label: "Find top large folders in current path",
-                admin: false,
-                cmd: {
-                  linux: `du -h --max-depth=1 | sort -hr | head -n 15`
-                },
-                meaning: [
-                  "Run in /var, /home, or the application directory to find growth."
-                ]
-              },
-              {
-                label: "List block devices",
-                admin: false,
-                cmd: {
-                  linux: `lsblk`
-                },
-                meaning: [
-                  "Shows disks, partitions, and mount points."
-                ]
-              }
+              { label: "Show free space", admin: false, cmd: { linux: `df -h` }, meaning: ["Look for filesystems near 100 percent use."] },
+              { label: "Find top large folders", admin: false, cmd: { linux: `du -h --max-depth=1 | sort -hr | head -n 15` }, meaning: ["Run in /var, /home, or the app directory."] },
+              { label: "List block devices", admin: false, cmd: { linux: `lsblk` }, meaning: ["Shows disks, partitions, and mount points."] }
             ],
             resultMeaning: [
               "Under 10 percent free space can cause crashes and update failures.",
@@ -453,38 +213,9 @@ const DATA = {
             name: "Check a service status",
             description: "Confirm a service is running and review logs.",
             steps: [
-              {
-                label: "Check service status",
-                admin: false,
-                cmd: {
-                  linux: `systemctl status <service> --no-pager`
-                },
-                meaning: [
-                  "Replace <service> with the service name.",
-                  "Look for Active: active (running) and recent errors."
-                ]
-              },
-              {
-                label: "Restart service",
-                admin: true,
-                cmd: {
-                  linux: `sudo systemctl restart <service>`
-                },
-                meaning: [
-                  "Use with care in production environments."
-                ]
-              },
-              {
-                label: "View recent logs",
-                admin: false,
-                cmd: {
-                  linux: `journalctl -u <service> -n 60 --no-pager`
-                },
-                meaning: [
-                  "Shows recent log lines for that unit.",
-                  "Good for spotting why it failed."
-                ]
-              }
+              { label: "Check status", admin: false, cmd: { linux: `systemctl status <service> --no-pager` }, meaning: ["Replace <service> with the service name."] },
+              { label: "Restart service", admin: true, cmd: { linux: `sudo systemctl restart <service>` }, meaning: ["Use with care in production environments."] },
+              { label: "View recent logs", admin: false, cmd: { linux: `journalctl -u <service> -n 60 --no-pager` }, meaning: ["Shows recent log lines for that unit."] }
             ],
             resultMeaning: [
               "Restart loops often mean config errors or missing dependencies.",
@@ -523,11 +254,7 @@ async function copyText(text) {
 function getState() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(raw); } catch { return null; }
 }
 
 function setState(next) {
@@ -547,25 +274,19 @@ function defaultState() {
   };
 }
 
-function categoriesFor(os) {
-  return DATA[os].categories;
-}
-
+function categoriesFor(os) { return DATA[os].categories; }
 function tasksFor(os, categoryId) {
   const cat = categoriesFor(os).find((c) => c.id === categoryId);
   return cat ? cat.tasks : [];
 }
-
 function findTask(os, categoryId, taskId) {
   return tasksFor(os, categoryId).find((t) => t.id === taskId) || null;
 }
 
 function filteredTaskOptions(os, searchText) {
   const q = (searchText || "").trim().toLowerCase();
-  const cats = categoriesFor(os);
-
   const result = [];
-  for (const c of cats) {
+  for (const c of categoriesFor(os)) {
     for (const t of c.tasks) {
       const blob = `${c.name} ${t.name} ${t.description}`.toLowerCase();
       if (!q || blob.includes(q)) result.push({ categoryId: c.id, task: t });
@@ -590,22 +311,22 @@ function renderTaskOptions(os, selectedCategory, selectedTask, searchText) {
   const el = $("taskSelect");
   el.innerHTML = "";
 
-  const options = filteredTaskOptions(os, searchText);
+  const searching = (searchText || "").trim().length > 0;
 
-  // If searching, show mixed tasks, but still keep category select in sync
-  if ((searchText || "").trim()) {
+  if (searching) {
+    const options = filteredTaskOptions(os, searchText);
     for (const item of options) {
       const opt = document.createElement("option");
       opt.value = `${item.categoryId}:${item.task.id}`;
-      opt.textContent = `${categoriesFor(os).find((c) => c.id === item.categoryId)?.name || ""}  •  ${item.task.name}`;
+      const catName = categoriesFor(os).find((c) => c.id === item.categoryId)?.name || "";
+      opt.textContent = `${catName} • ${item.task.name}`;
       if (`${item.categoryId}:${item.task.id}` === `${selectedCategory}:${selectedTask}`) opt.selected = true;
       el.appendChild(opt);
     }
     return;
   }
 
-  const tasks = tasksFor(os, selectedCategory);
-  for (const t of tasks) {
+  for (const t of tasksFor(os, selectedCategory)) {
     const opt = document.createElement("option");
     opt.value = t.id;
     opt.textContent = t.name;
@@ -628,8 +349,8 @@ function makeTicketNote(task, state) {
   lines.push(`OS: ${osLabel}`);
   lines.push(`Shell: ${shellLabel}`);
   lines.push("");
-
   lines.push("Run order and outputs:");
+
   for (const [i, step] of task.steps.entries()) {
     if (!state.admin && step.admin) continue;
     lines.push(`${i + 1}. ${step.label}`);
@@ -657,7 +378,6 @@ function renderTask(task, state) {
 
   $("taskDescription").textContent = task.description;
 
-  // Steps list
   const stepsList = $("stepsList");
   stepsList.innerHTML = "";
   for (const step of task.steps) {
@@ -667,7 +387,6 @@ function renderTask(task, state) {
     stepsList.appendChild(li);
   }
 
-  // Meaning box
   const meaningBox = $("meaningBox");
   meaningBox.innerHTML = "";
   const ul = document.createElement("ul");
@@ -686,7 +405,6 @@ function renderTask(task, state) {
     meaningBox.appendChild(p);
   }
 
-  // Commands list
   const cmdList = $("commandList");
   cmdList.innerHTML = "";
 
@@ -719,17 +437,17 @@ function renderTask(task, state) {
     pre.textContent = cmdText;
     wrap.appendChild(pre);
 
-    if (step.meaning && step.meaning.length) {
+    if (step.meaning?.length) {
       const note = document.createElement("div");
       note.style.marginTop = "10px";
       note.style.color = "var(--muted)";
       note.style.fontSize = "13px";
-      note.innerHTML = `<strong style="color: var(--text)">What to look for:</strong><ul style="margin: 8px 0 0 0; padding-left: 18px;"></ul>`;
-      const innerUl = note.querySelector("ul");
+      note.innerHTML = `<strong style="color: var(--text)">What to look for:</strong><ul style="margin:8px 0 0 0; padding-left:18px;"></ul>`;
+      const inner = note.querySelector("ul");
       for (const line of step.meaning) {
         const li = document.createElement("li");
         li.textContent = line;
-        innerUl.appendChild(li);
+        inner.appendChild(li);
       }
       wrap.appendChild(note);
     }
@@ -739,10 +457,9 @@ function renderTask(task, state) {
 
   $("hintText").textContent =
     state.os === "windows"
-      ? "Tip: Replace placeholders like <PID> or <ServiceName> before running."
+      ? "Tip: Replace placeholders like <ServiceName> or <PID> before running."
       : "Tip: Replace placeholders like <service> before running.";
 
-  // Copy all
   $("copyAllBtn").onclick = () => copyText(cmds.filter(Boolean).join("\n\n"));
   $("copyTicketBtn").onclick = () => copyText(makeTicketNote(task, state));
 }
@@ -753,17 +470,17 @@ function applyTheme(theme) {
 }
 
 function init() {
+  $("githubLink").href = CONFIG.github;
+
   const saved = getState();
   const state = { ...defaultState(), ...(saved || {}) };
 
-  // Theme default based on system if not saved
   if (!state.theme) {
     const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
     state.theme = prefersDark ? "dark" : "light";
   }
   applyTheme(state.theme);
 
-  // Controls
   $("osSelect").value = state.os;
   $("shellSelect").value = state.shell;
   $("adminToggle").checked = state.admin;
@@ -771,14 +488,12 @@ function init() {
   $("searchInput").value = state.search || "";
 
   function syncShellVisibility() {
-    const show = state.os === "windows";
-    $("shellField").style.display = show ? "block" : "none";
+    $("shellField").style.display = state.os === "windows" ? "block" : "none";
   }
 
   function syncOptions() {
     renderCategoryOptions(state.os, state.category);
 
-    // Validate category and task
     const cats = categoriesFor(state.os);
     if (!cats.find((c) => c.id === state.category)) state.category = cats[0].id;
 
@@ -817,7 +532,6 @@ function init() {
     state.os = e.target.value;
     state.search = "";
     $("searchInput").value = "";
-    // reset to first category and task for that OS
     state.category = categoriesFor(state.os)[0].id;
     state.task = tasksFor(state.os, state.category)[0].id;
     update();
@@ -841,12 +555,10 @@ function init() {
 
   $("searchInput").addEventListener("input", (e) => {
     state.search = e.target.value;
-    // pick first match if current selection is not in results
     const options = filteredTaskOptions(state.os, state.search);
     if (options.length) {
-      const first = options[0];
-      state.category = first.categoryId;
-      state.task = first.task.id;
+      state.category = options[0].categoryId;
+      state.task = options[0].task.id;
     }
     update();
   });
