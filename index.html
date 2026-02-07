@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IT Command Generator</title>
+    <meta name="description" content="Generate Windows and Linux troubleshooting commands with explanations." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="brand-title">IT Command Generator</span>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn ghost" id="themeToggle" type="button" aria-label="Toggle theme">
+            Theme
+          </button>
+          <a class="btn ghost" href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="container hero-inner">
+          <h1 class="title">Generate commands fast</h1>
+          <p class="subtitle">
+            Pick an OS and task. Get a run order, copy ready commands, and simple explanations.
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container layout">
+          <aside class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Controls</div>
+              <div class="panel-muted">Saved automatically</div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="osSelect">Operating system</label>
+              <select id="osSelect" class="select">
+                <option value="windows">Windows</option>
+                <option value="linux">Linux</option>
+              </select>
+            </div>
+
+            <div class="field" id="shellField">
+              <label class="label" for="shellSelect">Windows shell</label>
+              <select id="shellSelect" class="select">
+                <option value="powershell">PowerShell</option>
+                <option value="cmd">Command Prompt</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="label" for="categorySelect">Category</label>
+              <select id="categorySelect" class="select"></select>
+            </div>
+
+            <div class="field">
+              <label class="label" for="taskSelect">Task</label>
+              <select id="taskSelect" class="select"></select>
+            </div>
+
+            <div class="field">
+              <label class="label" for="searchInput">Search tasks</label>
+              <input id="searchInput" class="input" type="search" placeholder="dns, disk, ports, service" />
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label class="check">
+                <input id="adminToggle" type="checkbox" />
+                <span>Show admin commands when available</span>
+              </label>
+            </div>
+
+            <div class="field">
+              <label class="check">
+                <input id="redactToggle" type="checkbox" checked />
+                <span>Show reminders to redact sensitive info</span>
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="btn-row">
+              <button class="btn" id="copyAllBtn" type="button">Copy all commands</button>
+              <button class="btn ghost" id="copyTicketBtn" type="button">Copy ticket note</button>
+            </div>
+
+            <p class="hint" id="hintText"></p>
+          </aside>
+
+          <section class="stack">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" id="taskTitle">Task</div>
+                  <div class="card-meta" id="taskMeta"></div>
+                </div>
+                <div class="pill" id="taskPill">Ready</div>
+              </div>
+
+              <p class="card-text" id="taskDescription"></p>
+
+              <div class="divider"></div>
+
+              <div class="split">
+                <div>
+                  <div class="section-mini-title">Run order</div>
+                  <ol class="steps" id="stepsList"></ol>
+                </div>
+
+                <div>
+                  <div class="section-mini-title">What results mean</div>
+                  <div class="meaning" id="meaningBox"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Copy ready commands</div>
+                <div class="card-meta">Click any copy button</div>
+              </div>
+
+              <div class="cmd-list" id="commandList"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
