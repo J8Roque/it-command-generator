@@ -22,7 +22,7 @@
           <button class="btn ghost" id="themeToggle" type="button" aria-label="Toggle theme">
             Theme
           </button>
-          <a class="btn ghost" href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="btn ghost" id="githubLink" href="#" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </header>
@@ -39,7 +39,7 @@
 
       <section class="section">
         <div class="container layout">
-          <aside class="card panel">
+          <aside class="card panel" aria-label="Controls">
             <div class="panel-head">
               <div class="panel-title">Controls</div>
               <div class="panel-muted">Saved automatically</div>
@@ -73,7 +73,13 @@
 
             <div class="field">
               <label class="label" for="searchInput">Search tasks</label>
-              <input id="searchInput" class="input" type="search" placeholder="dns, disk, ports, service" />
+              <input
+                id="searchInput"
+                class="input"
+                type="search"
+                placeholder="dns, disk, ports, service"
+                autocomplete="off"
+              />
             </div>
 
             <div class="divider"></div>
@@ -95,14 +101,14 @@
             <div class="divider"></div>
 
             <div class="btn-row">
-              <button class="btn" id="copyAllBtn" type="button">Copy all commands</button>
+              <button class="btn primary" id="copyAllBtn" type="button">Copy all commands</button>
               <button class="btn ghost" id="copyTicketBtn" type="button">Copy ticket note</button>
             </div>
 
             <p class="hint" id="hintText"></p>
           </aside>
 
-          <section class="stack">
+          <section class="stack" aria-label="Output">
             <div class="card">
               <div class="card-head">
                 <div>
@@ -132,7 +138,7 @@
             <div class="card">
               <div class="card-head">
                 <div class="card-title">Copy ready commands</div>
-                <div class="card-meta">Click any copy button</div>
+                <div class="card-meta">Use the copy button on any command</div>
               </div>
 
               <div class="cmd-list" id="commandList"></div>
